@@ -10,12 +10,20 @@ try {
 } catch (error) {
   console.log("Error fetched", error.message);
 }
-app.get("/info", (request, response) => {
-  response.status(200).json({
-    data,
-  });
+
+// GET
+app.get("/info/:id", (request, response) => {
+  const { id } = request.params;
+
+  const item = data.find((user) => user.id === Number(id));
+  if (item) {
+    return response.status(200).json({
+      item,
+    });
+  }
 });
 
+// POST
 app.post("/info", (request, response) => {
   const newId = data[data.length - 1].id + 1;
   const newData = Object.assign({ id: newId }, request.body);
@@ -29,50 +37,56 @@ app.post("/info", (request, response) => {
     });
   });
 });
-app.get("info/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const datas = data.filter((element) => element.id === id);
-  if (datas.length === 0) {
+
+// PUT
+app.put("/info/:id", (request, response) => {
+  const { id } = request.params;
+  const updatedData = request.body;
+  const index = data.findIndex((element) => element.id === Number(id));
+
+  if (index === -1) {
     return response.status(404).json({
       status: "fail",
+      message: "User not found",
     });
   }
-  response.status(200).json({
-    status: "success",
-    data: {
-      datas,
-    },
-  });
+
+  data[index] = { ...data[index], ...updatedData };
+
+  fs.writeFile(
+    `${__dirname}/data.json`,
+    JSON.stringify(data, null, 2),
+    (err) => {
+      response.status(200).json({
+        status: "success",
+        data: data[index],
+      });
+    }
+  );
 });
-app.get("info/:id", (request, response) => {
 
-    if (request.params.id > data.length) {
-      return response.status(404).json({
-        status: "fail",
+// DELETE
+app.delete("/info/:id", (req, res) => {
+  const { id } = req.params;
+  const index = data.findIndex((user) => user.id === Number(id));
+
+  if (index === -1) {
+    return res.status(404).json({ message: "Data not found" });
+  }
+
+  const deletedItem = data.splice(index, 1);
+
+  fs.writeFile(
+    `${__dirname}/data.json`,
+    JSON.stringify(data, null, 2),
+    (err) => {
+      res.status(200).json({
+        message: "Data Deleted Successfully",
+        deletedItem,
       });
     }
-    response.status(200).json({
-      status: "success",
-      data: {
-      data
-      },
-    });
-  });
-
-  app.delete("info/:id", (request, response) => {
-
-    if (request.params.id > data.length) {
-      return response.status(404).json({
-        status: "fail",
-      });
-    }
-    response.status(200).json({
-      status: "success",
-      data: null,
-    });
-  });
-
-
+  );
+});
 
 const port = 3000;
 app.listen(port, () => {
