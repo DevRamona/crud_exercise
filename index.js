@@ -42,6 +42,32 @@ app.post("/info", (request, response) => {
 app.put("/info/:id", (request, response) => {
   const { id } = request.params;
   const updatedData = request.body;
+  const index = data.findIndex((element) => element && element.id === Number(id));
+
+  if (index === -1) {
+    return response.status(404).json({
+      status: "fail",
+      message: "User not found",
+    });
+  }
+
+  data[index] = {id: Number(id), ...updatedData };
+
+  fs.writeFile(
+    `${__dirname}/data.json`,
+    JSON.stringify(data, null, 2),
+    (err) => {
+      response.status(200).json({
+        status: "success",
+        data: data[index],
+      });
+    }
+  );
+});
+
+app.patch("/info/:id", (request, response) => {
+  const { id } = request.params;
+  const updatedData = request.body;
   const index = data.findIndex((element) => element.id === Number(id));
 
   if (index === -1) {
@@ -64,7 +90,6 @@ app.put("/info/:id", (request, response) => {
     }
   );
 });
-
 // DELETE
 app.delete("/info/:id", (req, res) => {
   const { id } = req.params;
