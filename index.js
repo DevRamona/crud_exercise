@@ -10,7 +10,13 @@ try {
 } catch (error) {
   console.log("Error fetched", error.message);
 }
-
+app.get('/getAll', (request, response) => {
+  if(data) {
+    response.status(200).json(data)
+  } else {
+    response.status(500).json("Data unavailable")
+  }
+})
 // GET
 app.get("/info/:id", (request, response) => {
   const { id } = request.params;
@@ -44,6 +50,11 @@ app.post("/info", (request, response) => {
 app.put("/info/:id", (request, response) => {
   const { id } = request.params;
   const updatedData = request.body;
+  if(Object.keys(updatedData).length === 0){
+    return response.status(400).json({
+      message: "Request can't be empty"
+    })
+  }
   const index = data.findIndex((element) => element && element.id === Number(id));
 
   if (index === -1) { 
