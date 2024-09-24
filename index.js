@@ -6,7 +6,7 @@ app.use(express.json());
 let data;
 try {
   data = JSON.parse(fs.readFileSync(`${__dirname}/data.json`));
-  console.log("The required data", data);
+  return data
 } catch (error) {
   console.log("Error fetched", error.message);
 }
@@ -20,6 +20,8 @@ app.get("/info/:id", (request, response) => {
     return response.status(200).json({
       item,
     });
+  } else {
+    return response.status(500).json("The item is not found")
   }
 });
 
@@ -44,10 +46,10 @@ app.put("/info/:id", (request, response) => {
   const updatedData = request.body;
   const index = data.findIndex((element) => element && element.id === Number(id));
 
-  if (index === -1) {
+  if (index === -1) { 
     return response.status(404).json({
       status: "fail",
-      message: "User not found",
+      message: "item not found",
     });
   }
 
